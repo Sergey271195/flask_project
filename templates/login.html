@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+{% block maincontent%}
+
+<br>
+<br>
+<div class = 'container border border-primary rounded' style = 'width: 30%'>
+    <br>
+    <h4><u>Login</u></h4>
+    <br>
+    <form action = '' method = 'POST' class = 'form-group'>
+        <label for="Username">Username:</label>
+        <input type = 'text' class = 'form-control' 
+        value = '{{username}}' name='username'>
+        <br>
+        <label for="Password">Password:</label>
+        <input type = 'password' class = 'form-control' 
+        value = '{{password}}' name='password'>
+        {% if invalid_data %}
+            <small id="help" class="form-text text-danger">{{invalid_data}}</small>
+        {% endif %}
+        <br>
+        <button type="submit" class="btn btn-primary mr-sm-2 mb-sm-2" value='login'>Submit</button>
+        <small id="help" class="form-text text-muted">Don't have an account yet? <a class="link" href="{{url_for('register')}}">Register</a></small>
+    </form>
+</div>
+{% endblock maincontent %}
+

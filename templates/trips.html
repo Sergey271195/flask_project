@@ -1,0 +1,380 @@
+{% extends 'layout.html' %}
+{% block maincontent%}
+        
+    <div class = 'container  my-sm-3 ml-sm-5'>
+        <h2>Info page</h2>
+            
+            <button type="submit" class="btn btn-info btn-sm mr-sm-3 mb-sm-2" style = 'padding: 10;', id = 'housingBtn' value='add'>+</button>
+            <label class='mr-sm-5'>Housing</label>
+        </div>
+    </div>
+    <ul class="nav nav-tabs ml-sm-5" style = 'width: 80%' id="myTab" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="home-tab" data-toggle="tab" href="#trip" role="tab" aria-controls="home" aria-selected="true">Trips & Tickets</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Accomodation</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="notes-tab" data-toggle="tab" href="#task" role="tab" aria-controls="contact" aria-selected="false">Tasks</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="contact-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="contact" aria-selected="false">Notes</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="contact-tab" data-toggle="tab" href="#stats" role="tab" aria-controls="contact" aria-selected="false">Statistic</a>
+              </li>
+          </ul>
+          
+          <!--Routes Tab-->
+
+          <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active ml-sm-5 my-sm-2" id="trip" role="tabpanel" aria-labelledby="home-tab">
+                    <div class="d-flex align-items-center ml-sm-5">
+                                                    
+                    <input type = 'text' class = "mt-sm-2 mr-sm-3" name='search' id='searchInput'>
+                    <button type="submit" class="btn btn-info btn-sm mr-sm-5 mt-sm-2" style = 'padding: 10;', id = 'searchBtn' value='search'>Search</button>
+                    <button type="submit" class="btn btn-info btn-sm mr-sm-3 mt-sm-2" style = 'padding: 10;', id = 'routeBtn' value='add'>Add Route</button>        
+
+                </div>
+                    <hr class = 'w-75 float-left'>
+                <div id = 'mytable'></div>    
+
+                <script type=text/javascript>
+                        $(function() {
+                          $('#searchBtn').bind('click', function() {
+                              var search_info = $('#searchInput').val();
+                            $.getJSON('/getData/', {info : search_info},
+                                function(data) {
+                              console.log(data.info)
+                              createOptions(data.info)
+                            });
+                        return false;
+                      });
+                    });
+                </script>
+
+                <script>
+                function createOptions(query) {
+                    var data = JSON.parse(query);
+                        var table = document.getElementById('mytable');
+                        table.innerHTML = '';
+                        for (var key in data) {
+                            console.log(key);
+                            var new_data = data[key];
+                            var newDiv = document.createElement("div");
+                            console.log('2');
+                            newDiv.classList.add('container', 'ml-sm-2', 'float-left', 'w-50');
+                            console.log('3');
+                            table.appendChild(newDiv);
+                            console.log('4');
+                            for (var new_key in new_data) {
+                                var newpar = document.createElement('p');
+                                var t = document.createTextNode(new_key + ':'+ new_data[new_key]);
+                                newpar.appendChild(t);
+                                newDiv.appendChild(newpar)
+                                console.log(new_key + ':'+ new_data[new_key]);
+                            }   
+                        }
+                    }
+                </script>
+
+
+                {% for route in routes %}
+                <div class = 'container ml-sm-2 float-left w-50'>
+                
+                    <div class = 'row justify-content-start my-sm-3' >   
+                        <div class = 'col-4'>From: <strong>{{route[0]}}, {{route[6]}}</strong></div>
+                        <div class = 'col-4'>To: <strong>{{route[1]}}, {{route[7]}}</strong></div>
+                        <div class = 'col-4'>Distance: <strong>{{route[9]}} km</strong></div>
+                    </div>
+                
+                    <div class = 'row justify-content-start my-sm-3'>
+                        <div class = 'col-4'>Depature: <strong>{{route[2]|datetime}}</strong></div>
+                        <div class = 'col-4'>Arrival: <strong>{{route[3]|datetime}}</strong></div>
+                    </div>
+                    <div class = 'row justify-content-start my-sm-3'>
+                        <div class = 'col-4'>Road time: <strong>{{route[8]}}</strong></div>
+                        <div class = 'col-4'>Fare: <strong>{{route[4]}}</strong> <strong>{{route[5]}}</strong></div>
+                    </div>  
+                    <hr>
+                    </div>
+                    
+                    <div class = 'container ml-sm-2 float-left w-25 border-left'>
+                        <form action = '/trips/' method = 'POST' >
+                            <button type="submit"  name = 'delete' class = 'btn btn-secondary' value = '{{route[10]}}'>Del</button>
+                        </form>  
+                    </div>
+                    
+                
+
+                    {% endfor %}
+            </div>
+            <div class="tab-pane fade ml-sm-5 " id="profile" role="tabpanel" aria-labelledby="accomodation-tab">Accomodation</div>
+            <div class="tab-pane fade ml-sm-5 " id="task" role="tabpanel" aria-labelledby="tasks-tab">Task</div>
+
+            <!--NOTES TAB-->
+            
+            <div class="tab-pane fade ml-sm-5 " id="notes" role="tabpanel" aria-labelledby="notes-tab">
+                    <div class = 'container ml-sm-2 float-left w-75'>
+                    <h4 class='my-sm-2'>Latest rates</h4>
+                {%if location%}
+                {% for value in location.get_current_rate() %}
+                    {% set label, rate = value %}
+                    
+                    <div class = 'row justify-content-start my-sm-3' >   
+                            <div class = 'col-2'>From: <strong>{{label.split('_')[0]}}</strong></div>
+                            <div class = 'col-2'>To: <strong>{{label.split('_')[1]}}</strong></div>
+                            <div class = 'col-2'>Rate: <strong>{{rate|round}}</strong></div>
+                        </div>
+                {% endfor %}
+                {%endif%}
+                        <hr>
+                <h4 class='mt-sm-2'>Weekly rates</h4>
+                    <div id="rates_graph">
+                        </div>
+            </div>
+            </div>
+
+            <!--Statistics Tab-->
+
+            <div class="tab-pane fade ml-sm-5 " id="stats" role="tabpanel" aria-labelledby="states-tab">
+
+            {% if statistics.status %}
+            
+            <div class = 'container my-sm-3 ml-sm-2'>
+                    <div class = 'row justify-content-start my-sm-3'>   
+                        <div class = 'col-3'>
+                                Current location:<br>
+                                <div  class = 'my-sm-2'><strong>{{statistics.curr_location}}</strong></div>
+                            </div>
+                        <div class = 'col-3'>
+                                Time since arrival:<br>
+                                <div  class = 'my-sm-2'>    
+                            {% for el in statistics.curr_location_time %}
+                            <strong>{{statistics.curr_location_time[el]}} </strong>{{el}}
+                            {% endfor %}
+                                </div>
+                        </div>
+                        <div class = 'col-2'>Total fare:<br>
+                            <div  class = 'my-sm-2'><strong>{{statistics.total_fare}}</strong></div>
+                        </div>    
+                    </div>
+                
+                    <div class = 'row justify-content-start my-sm-3'>
+                        <div class = 'col-3 my-sm-2'>
+                                Visited countires:<br>
+                                {% for country in statistics.country_time %}
+                                <div  class = 'my-sm-2'><strong>{{country}} </strong></div>
+                                {% endfor %}
+                        </div>     
+
+                        <div class = 'col-3 my-sm-2'>
+                                Time spent:<br>
+                                {% for country in statistics.country_time %}
+                                <div  class = 'my-sm-2'>
+                                    {% for el in statistics.country_time[country] %}
+                                <strong>{{statistics.country_time[country][el]}} </strong>{{el}}
+                                    {% endfor %}
+                                </div>
+                                {% endfor %}
+                        </div>
+                        
+                        <div class = 'col-3 my-sm-2'>
+                                Time in percents:<br>
+                                {% for country in statistics.country_percent %}
+                                <div  class = 'my-sm-2'><strong>{{statistics.country_percent[country]}} </strong>%</div>
+                                {% endfor %}
+                        </div>  
+                    </div>
+                        <hr>
+                    </div>
+                 <!--GRAPH PLOTLY-->
+                    <div id="graph">
+                    </div>
+                {% else %}
+                <div class = 'container my-sm-3 ml-sm-2'>
+                        <div class = 'row justify-content-start my-sm-3'>   
+                            <div class = 'col ml-sm-2'>Currently not enough data for statistical analisys</div> 
+                        </div>
+                </div>
+                {% endif %}
+            </div>
+
+       
+    <!--MODAL WINDOWS FOR ADDING DATA-->
+    <div class="container">                   
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog"> 
+            <!-- Modal content-->
+            <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add information about your latest trip</h4>
+            </div>
+            <div class="modal-body">
+                <!--FORM INSIDE MODAL WINDOW-->
+                    <form action = '/trips/' method = 'POST' class = 'form-group'>
+                        <!--Origin-->
+                        <div class="container-fluid my-sm-2">
+                        <div class = 'form-row justify-content-start'>
+                                <div class = 'col-md-3'>
+                        <label class = 'mr-sm-5 my-sm-2' for="origin">From:</label>
+                                </div>
+                                <div class = 'col-md-5'>
+                        <select class="selectpicker" data-live-search="true" name = 'origin'>
+                            {%if countries%}
+                                {% for country in countries %}
+                                <option value = '{{country[1]}}, {{country[2]}}' name = 'country'>{{country[1]}}, {{country[2]}}</option>
+                                {% endfor %}
+                            {%endif%}
+                        </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Departure-->
+                <div class="container-fluid">
+                        <div class="form-row">
+                            <div class = 'col-md-3'>
+                        <label class = 'mr-sm-5 my-sm-2' for="departure">Deaprature:</label>
+                            </div>
+                                <div class="col-sm-6 md-5">
+                                    <div class="form-group">
+                                        <div class="input-group date" id="datetimepicker_dep" data-target-input="nearest">
+                                            <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker_dep"
+                                            value = '{{request.form.departure}}' name = 'departure'/>
+                                            <div class="input-group-append" data-target="#datetimepicker_dep" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                    <script type="text/javascript">
+                                        $(function () {
+                                            $('#datetimepicker_dep').datetimepicker({
+                                                locale: 'ru'
+                                            });
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                
+                        <!--Destination-->
+            <div class="container-fluid my-sm-2">
+                    <div class = 'form-row justify-content-start'>
+                            <div class = 'col-md-3'>
+                        <label class = 'mr-sm-5 my-sm-2' for="destination">To:</label>
+                                    </div>
+                                    <div class = 'col-md-5'>
+                        <select class="selectpicker" data-live-search="true" name = 'destination'>
+                            {%if countries%}
+                                {% for country in countries %}
+                                    <option value = '{{country[1]}}, {{country[2]}}' name = 'country'>{{country[1]}}, {{country[2]}}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                        </div> 
+                    </div>
+                </div>
+                        
+
+            <!--Arrival-->
+            <div class="container-fluid">
+                    <div class="form-row">
+                        <div class = 'col-md-3'>
+                    <label class = 'mr-sm-5 my-sm-2' for="arrival">Arrival:</label>
+                        </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <div class="input-group date" id="datetimepicker_arr" data-target-input="nearest">
+                                        <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker_arr"
+                                        value = '{{request.form.arrival}}' name = 'arrival'/>
+                                        <div class="input-group-append" data-target="#datetimepicker_arr" data-toggle="datetimepicker">
+                                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                                <script type="text/javascript">
+                                    $(function () {
+                                        $('#datetimepicker_arr').datetimepicker({
+                                            locale: 'ru'
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>
+
+
+                        <!--Fare-->
+                        <div class="container-fluid my-sm-2">
+                        <div class = 'form-row justify-content-start'>
+                            <div class = 'col-md-3'>
+                        <label class = 'mr-sm-5 my-sm-2' for="fare">Fare:</label>
+                                </div>
+                                <div class = 'col-md-6'>
+                        <input type = 'text' class = 'form-control' 
+                        value = '{{request.form.fare}}' name='fare'>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Currency-->
+                        
+                        <div class="container-fluid my-sm-2">
+                        <div class = 'form-row justify-content-start'>
+                            <div class = 'col-md-3'>
+                        <label class = 'mr-sm-5 my-sm-2' for="currency">Currency:</label>
+                            </div>
+                        <div class = 'col-md-5'>
+                                <select class="selectpicker" data-live-search="true" name = 'currency'>
+                                    {% if currencies %}
+                                        {% for currency in currencies %}
+                                        {% set name, sym = currency.split(",") %}
+                                        <option value = '{{name}},{{sym}}' name = 'currency'>{{name}}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                        </div> 
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Add</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>    
+            </div>
+        </div>
+        </div>
+    
+    </div>
+                         
+<script>
+    $(document).ready(function(){
+    $("#routeBtn").click(function(){
+        $("#myModal").modal("show");
+    });
+    $("#myBtn").click(function(){
+        $("#myModal").modal("hide");
+    });
+    });
+</script>
+
+<script>
+    {%if stats%}
+    var graphs = {{plot | safe}};
+    Plotly.plot('graph',graphs,{"title": {"text": "Duration of housing"}});
+    {%endif%}
+</script>
+
+<script>
+    {%if location%}
+    var graphs = {{location.get_weekly_rates() | safe}};
+    Plotly.plot('rates_graph',graphs, {});
+    {%endif%}
+</script>
+{% endblock maincontent %}

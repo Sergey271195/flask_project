@@ -1,0 +1,56 @@
+{% extends 'layout.html' %}
+{% block maincontent%}
+{%if invalids%}
+    {% set invalid_username, invalid_password, invalid_email, invalid_conditions = invalids %}
+{%endif%}
+<br>
+<div class = 'container border border-primary rounded' style = 'width: 30%'>
+    <br>
+    <h4 ><u>Register Form</u></h4>
+
+    <form action = '/register/' method = 'POST' class = 'form-group'>
+
+        <!--Username-->
+        <label class = 'mr-sm-5 my-sm-2' for="Username">Username:</label>
+        <input type = 'text' class = 'form-control' 
+        value = '{{request.form.username}}' name='username'>
+        {% if invalid_username %}
+            <small id="help" class="form-text text-danger">{{invalid_username}}</small>
+        {% endif %}
+
+        <!--Password-->
+        <label class = 'mr-sm-5 my-sm-2' for="Password">Password:</label>
+        <input type = 'password' class = 'form-control' 
+        value = '{{request.form.password}}' name='password'>
+        {% if invalid_password %}
+            <small id="help" class="form-text text-danger">{{invalid_password}}</small>
+        {% endif %}
+        
+        <!--Confirmpassword-->
+        <label class = 'mr-sm-5 my-sm-2' for="Password">Confirm password:</label>
+        <input type = 'password' class = 'form-control' 
+        value = '{{request.form.confirmpassword}}' name='confirmpassword'>
+
+        <!--E-mail-->
+        <label class = 'mr-sm-5 my-sm-2' for="Email">E-mail:</label>
+        <input type = 'email' class = 'form-control' 
+        value = '{{request.form.email}}' name='email'>
+        {% if invalid_email %}
+            <small id="help" class="form-text text-danger">{{invalid_email}}</small>
+        {% endif %}
+
+        <!--Agreement-->
+        <div class = "form-group my-sm-2">
+        <input class="form-check-input ml-sm-1" type="checkbox" id="gridCheck" name='conditions' value = 'agreed'>
+            <small class = 'ml-sm-4'>I accept <a href ='#'>Terms of Service</a> and <a href ='#'>Privacy Policy</a></small>
+        </div>
+        {% if invalid_conditions %}
+            <small id="help" class="form-text text-danger">{{invalid_conditions}}</small>
+        {% endif %}
+        <button type="submit" class="btn btn-primary mr-sm-5 my-sm-2" value='register'>Submit</button>
+        
+        <br>    
+        <small id="help" class="form-text text-muted">Already have an account? <a class="link" href="{{url_for('login')}}">Login</a></small>
+    </form>
+</div>
+{% endblock maincontent %}

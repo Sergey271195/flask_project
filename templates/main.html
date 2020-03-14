@@ -1,0 +1,66 @@
+{% extends 'layout.html' %}
+{% block maincontent%}
+
+<br>
+<div class="container float-left" style='width: 25%'>
+        <div class="row justify-content-center">
+          <div class="col-10 ml-sm-2 my-sm-3 text-center">
+            <strong>“Live as if you were to die tomorrow. Learn as if you were to live forever.”</strong><br>
+                    <small><em>– Mahatma Gandhi</em></small>
+          </div>
+        </div>
+        <div class="row justify-content-start">
+          <div class="col-5 ml-sm-1  my-sm-2 text-left">
+                <strong>“That which does not kill us makes us stronger.”</strong><br>
+                <small><em>– Friedrich Nietzsche</em></small>
+          </div>
+          <div class="col-6 my-sm-5 ml-sm-3 text-right">
+                <strong> “We must not allow other people’s limited perceptions to define us.”</strong><br>
+                <small><em>– Virginia Satir</em></small>
+          </div>
+        </div>
+        <div class="row justify-content-left text-right my-sm-2">
+          <div class="col-9">
+                <strong>“Be who you are and say what you feel, because those who mind don’t matter and those who matter don’t mind.”</strong><br>
+                <small><em>– Bernard M. Baruch</em></small>
+          </div>
+        </div>
+        <div class="row justify-content-end my-sm-5">
+          <div class="col-6">
+                <strong> “Be yourself; everyone else is already taken.”</strong><br>
+                <small><em> – Oscar Wilde</em></small>
+          </div>
+        </div>
+      </div>
+
+<div id="carouselExampleIndicators" class="carousel slide w-50 container-fluid" data-ride="carousel">
+        <ol class="carousel-indicators">
+          <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+          <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+          <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+        </ol>
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <img src="{{url_for('static', filename = 'images/Minsk1.jpg')}}" class="d-block w-100" style="min-height: 500px;" alt="...">
+          </div>
+          <div class="carousel-item">
+            <img src="{{url_for('static', filename = 'images/Moscow2.jpg')}}" class="d-block w-100" style="min-height: 500px;" alt="...">
+          </div>
+          <div class="carousel-item">
+            <img src="{{url_for('static', filename = 'images/Moscow1.jpg')}}" class="d-block w-100" style="min-height: 500px;" alt="...">
+          </div>
+        </div>
+        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="sr-only">Next</span>
+        </a>
+        
+</div>
+<h1 class="text-center my-sm-5">Share Grow Explore</h1>
+        <h2></h2>
+        <h2></h2>
+{% endblock maincontent %}
