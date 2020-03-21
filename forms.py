@@ -1,7 +1,5 @@
-from datetime import datetime
-from search import Route
+from datetime import datetime, date
 
-route_data = Route()
 
 def turn_to_date(nums):
     dates = []
@@ -30,7 +28,8 @@ def validate_route(connection, request, session):
     if any(request.form[el] == '' for el in request.form):
         return valid_route
 
-    distance = route_data.count_miles([request.form['origin'], request.form['destination']])
+
+    distance = connection.get_distance([request.form['origin'], request.form['destination']])
     departure = datetime.strptime(request.form['departure'], '%d.%m.%Y %H:%M')
     arrival = datetime.strptime(request.form['arrival'], '%d.%m.%Y %H:%M')
     delta = arrival - departure 
@@ -45,6 +44,44 @@ def validate_route(connection, request, session):
 
     #Then insert
     connection.add_route(insert_data)
+
+
+def validate_accom(connection, request, session, location): 
+    
+    valid_route = False
+    user_id = session['id']
+    for el in request.form:
+        print(el, ':', request.form[el])
+    if any(request.form[el] == '' for el in request.form):
+        return valid_route
+
+
+
+    start_date = datetime.strptime(request.form['from'], '%d.%m.%Y')
+    end_date = datetime.strptime(request.form['till'], '%d.%m.%Y')
+    delta = end_date - start_date
+    delta_days = delta.days 
+    if delta.total_seconds() < 0:
+        return valid_route
+
+    currency = request.form['currency'].split(',')[1]
+    rate = location.get_rate(currency, start_date)
+    if rate == "LIMIT REACHED":
+        rate = '-'
+        sum_in_rub = '-'
+    else:
+        rate = float(list(rate[0][1].values())[0])
+        sum_in_rub = str(round(float(request.form['fare'])*rate, 2))
+    fare = round(float(request.form['fare']), 2)
+
+
+
+    #Route data for DB insertion
+    insert_data = (request.form['country'], str(request.form['address']), str(start_date), str(end_date), str(fare), str(currency)[:3],
+     str(delta_days), sum_in_rub, str(user_id))
+
+    #Then insert
+    connection.add_housing(insert_data)
 
 
 def validate_form(connection, request):

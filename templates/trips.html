@@ -1,11 +1,8 @@
 {% extends 'layout.html' %}
 {% block maincontent%}
-        
+<script src='{{url_for("static", filename = "js/trips.js")}}'></script>
     <div class = 'container  my-sm-3 ml-sm-5'>
         <h2>Info page</h2>
-            
-            <button type="submit" class="btn btn-info btn-sm mr-sm-3 mb-sm-2" style = 'padding: 10;', id = 'housingBtn' value='add'>+</button>
-            <label class='mr-sm-5'>Housing</label>
         </div>
     </div>
     <ul class="nav nav-tabs ml-sm-5" style = 'width: 80%' id="myTab" role="tablist">
@@ -13,7 +10,7 @@
               <a class="nav-link active" id="home-tab" data-toggle="tab" href="#trip" role="tab" aria-controls="home" aria-selected="true">Trips & Tickets</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Accomodation</a>
+              <a class="nav-link" id="profile-tab" data-toggle="tab" href="#accomodation" role="tab" aria-controls="profile" aria-selected="false">Accomodation</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="notes-tab" data-toggle="tab" href="#task" role="tab" aria-controls="contact" aria-selected="false">Tasks</a>
@@ -38,64 +35,24 @@
 
                 </div>
                     <hr class = 'w-75 float-left'>
-                <div id = 'mytable'></div>    
-
-                <script type=text/javascript>
-                        $(function() {
-                          $('#searchBtn').bind('click', function() {
-                              var search_info = $('#searchInput').val();
-                            $.getJSON('/getData/', {info : search_info},
-                                function(data) {
-                              console.log(data.info)
-                              createOptions(data.info)
-                            });
-                        return false;
-                      });
-                    });
-                </script>
-
-                <script>
-                function createOptions(query) {
-                    var data = JSON.parse(query);
-                        var table = document.getElementById('mytable');
-                        table.innerHTML = '';
-                        for (var key in data) {
-                            console.log(key);
-                            var new_data = data[key];
-                            var newDiv = document.createElement("div");
-                            console.log('2');
-                            newDiv.classList.add('container', 'ml-sm-2', 'float-left', 'w-50');
-                            console.log('3');
-                            table.appendChild(newDiv);
-                            console.log('4');
-                            for (var new_key in new_data) {
-                                var newpar = document.createElement('p');
-                                var t = document.createTextNode(new_key + ':'+ new_data[new_key]);
-                                newpar.appendChild(t);
-                                newDiv.appendChild(newpar)
-                                console.log(new_key + ':'+ new_data[new_key]);
-                            }   
-                        }
-                    }
-                </script>
-
 
                 {% for route in routes %}
-                <div class = 'container ml-sm-2 float-left w-50'>
+            <div class = 'parent-route'>
+                <div class = 'container ml-sm-2 float-left w-50' >
                 
                     <div class = 'row justify-content-start my-sm-3' >   
-                        <div class = 'col-4'>From: <strong>{{route[0]}}, {{route[6]}}</strong></div>
-                        <div class = 'col-4'>To: <strong>{{route[1]}}, {{route[7]}}</strong></div>
-                        <div class = 'col-4'>Distance: <strong>{{route[9]}} km</strong></div>
+                        <div class = 'col-4  route-div'>From: <strong>{{route[0]}}, {{route[6]}}</strong></div>
+                        <div class = 'col-4 route-div'>To: <strong>{{route[1]}}, {{route[7]}}</strong></div>
+                        <div class = 'col-4 route-div'>Distance: <strong>{{route[9]}} km</strong></div>
                     </div>
                 
                     <div class = 'row justify-content-start my-sm-3'>
-                        <div class = 'col-4'>Depature: <strong>{{route[2]|datetime}}</strong></div>
-                        <div class = 'col-4'>Arrival: <strong>{{route[3]|datetime}}</strong></div>
+                        <div class = 'col-4 route-div'>Depature: <strong>{{route[2]|datetime('DT')}}</strong></div>
+                        <div class = 'col-4 route-div'>Arrival: <strong>{{route[3]|datetime('DT')}}</strong></div>
                     </div>
                     <div class = 'row justify-content-start my-sm-3'>
-                        <div class = 'col-4'>Road time: <strong>{{route[8]}}</strong></div>
-                        <div class = 'col-4'>Fare: <strong>{{route[4]}}</strong> <strong>{{route[5]}}</strong></div>
+                        <div class = 'col-4 route-div'>Road time: <strong>{{route[8]}}</strong></div>
+                        <div class = 'col-4 route-div'>Fare: <strong>{{route[4]}}</strong> <strong>{{route[5]}}</strong></div>
                     </div>  
                     <hr>
                     </div>
@@ -105,33 +62,122 @@
                             <button type="submit"  name = 'delete' class = 'btn btn-secondary' value = '{{route[10]}}'>Del</button>
                         </form>  
                     </div>
+            </div>
                     
                 
 
                     {% endfor %}
             </div>
-            <div class="tab-pane fade ml-sm-5 " id="profile" role="tabpanel" aria-labelledby="accomodation-tab">Accomodation</div>
+
+
+            <!--ACCOMODATION TAB-->
+
+            <div class="tab-pane fade ml-sm-5 my-sm-2" id="accomodation" role="tabpanel" aria-labelledby="accomodation-tab">
+
+            <div class="d-flex align-items-center ml-sm-5">
+                                                    
+                <input type = 'text' class = "mt-sm-2 mr-sm-3" name='search' id='searchInput'>
+                <button type="submit" class="btn btn-info btn-sm mr-sm-5 mt-sm-2" style = 'padding: 10;', id = 'searchHouseBtn' value='search'>Search</button>
+                
+                <button type="submit" class="btn btn-info btn-sm mr-sm-3 mt-sm-2" style = 'padding: 10;', id = 'housingBtn' value='addHousing'>Add Housing</button>
+    
+
+            </div>
+                <hr class = 'w-75 float-left'>
+
+                {% for house in mysession.housing %}
+                <div class = 'parent-house'>
+                    <div class = 'container ml-sm-2 float-left w-50' >
+                    
+                        <div class = 'row justify-content-start my-sm-3' >   
+                            <div class = 'col-4  house-div'>Country: <strong>{{house[0]}}</strong></div>
+                            <div class = 'col-4 house-div'>Address: <strong>{{house[1]}}</strong></div>
+                            <div class = 'col-4 house-div'>Time period: <strong>{{house[6]}} days</strong></div>
+                            
+                        </div>
+                    
+                        <div class = 'row justify-content-start my-sm-3'>
+                            <div class = 'col-4 house-div'>From: <strong>{{house[2]|datetime('D')}}</strong></div>
+                            <div class = 'col-4 house-div'>Untill: <strong>{{house[3]|datetime('D')}}</strong></div>
+                            <div class = 'col-4 house-div'>Time left: <strong>{{(house[3] - TODAY).days|datetime('delta')}}</strong></div>
+                        </div>
+                        <div class = 'row justify-content-start my-sm-3'>
+                            
+                            <div class = 'col-4 house-div'>Fare: <strong>{{house[4]|round}}</strong> <strong>{{house[5]}}</strong></div>
+                            <div class = 'col-4 house-div'>Fare in rubles: <strong>{{house[7]}} RUB</strong></div>
+                            <div class = 'col-4 house-div'>Current fare: <strong>{{house[4]|rate(house[5])}} RUB</strong></div>
+                        </div>  
+                        <hr>
+                        </div>
+                        
+                        <div class = 'container ml-sm-2 float-left w-25 border-left'>
+                            <form action = '/trips/' method = 'POST' >
+                                <button type="submit"  name = 'delete_housing' class = 'btn btn-secondary' value = '{{house[2]}}'>Del</button>
+                            </form>  
+                        </div>
+                </div>
+                        
+                    
+    
+                        {% endfor %}
+
+            </div>
+
+            <!--TASKS TAB-->
+
             <div class="tab-pane fade ml-sm-5 " id="task" role="tabpanel" aria-labelledby="tasks-tab">Task</div>
 
             <!--NOTES TAB-->
             
             <div class="tab-pane fade ml-sm-5 " id="notes" role="tabpanel" aria-labelledby="notes-tab">
-                    <div class = 'container ml-sm-2 float-left w-75'>
+                <div class = 'container ml-sm-2 float-left w-75'>
+                <div class = 'row'>
+                    <div class = 'col'>
                     <h4 class='my-sm-2'>Latest rates</h4>
-                {%if location%}
+                    {%if location%}
+                    {% if location.get_current_rate() == 'LIMIT REACHED'%}
+                    <div class = 'row justify-content-start my-sm-3' >   
+                        <div class = 'col-4'><strong>API LIMIT REACHED</strong></div>
+                     </div>
+                     {%else%}
                 {% for value in location.get_current_rate() %}
                     {% set label, rate = value %}
                     
                     <div class = 'row justify-content-start my-sm-3' >   
-                            <div class = 'col-2'>From: <strong>{{label.split('_')[0]}}</strong></div>
-                            <div class = 'col-2'>To: <strong>{{label.split('_')[1]}}</strong></div>
-                            <div class = 'col-2'>Rate: <strong>{{rate|round}}</strong></div>
+                            <div class = 'col-4'>From: <strong>{{label.split('_')[0]}}</strong></div>
+                            <div class = 'col-4'>To: <strong>{{label.split('_')[1]}}</strong></div>
+                            <div class = 'col-4'>Rate: <strong>{{rate|round}}</strong></div>
                         </div>
-                {% endfor %}
+                    {% endfor %}
                 {%endif%}
+            {%endif%}
+                    </div>
+                    <div class = 'col'>
+                        <h4 class='my-sm-2'>Current weather</h4>
+                    {%if location%}
+                        {% set main, description, temp, temp_feels_like, humidity, wind_speed = location.get_weather() %}
+                        <div class = 'row justify-content-start my-sm-3' >   
+                            <div class = 'col-5'>Weather: <strong>{{main}}</strong></div>
+                            <div class = 'col-5'>Descr: <strong>{{description}}</strong></div>
+                        </div>
+                        <div class = 'row justify-content-start my-sm-3' >   
+                            <div class = 'col-5'>Tempertaure: <strong>{{temp}}</strong> &deg;C</div>
+                            <div class = 'col-5'>Feels like: <strong>{{temp_feels_like}}</strong> &deg;C</div>
+                        </div>
+                        <div class = 'row justify-content-start my-sm-3' >   
+                            <div class = 'col-5'>Humidity: <strong>{{humidity}}</strong> %</div>
+                            <div class = 'col-5'>Wind speed: <strong>{{wind_speed}}</strong> m/s</div>
+                        </div>
+                    {%endif%}
+                    </div>
+                </div>
                         <hr>
                 <h4 class='mt-sm-2'>Weekly rates</h4>
                     <div id="rates_graph">
+                        </div>
+                        <hr>
+                <h4 class='mt-sm-2'>Weather statistics</h4>
+                    <div id="weather_graph">
                         </div>
             </div>
             </div>
@@ -202,10 +248,10 @@
             </div>
 
        
-    <!--MODAL WINDOWS FOR ADDING DATA-->
+    <!--MODAL WINDOWS FOR ADDING TRIPS-->
     <div class="container">                   
         <!-- Modal -->
-        <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal fade" id="RouteModal" role="dialog">
         <div class="modal-dialog"> 
             <!-- Modal content-->
             <div class="modal-content">
@@ -222,13 +268,10 @@
                         <label class = 'mr-sm-5 my-sm-2' for="origin">From:</label>
                                 </div>
                                 <div class = 'col-md-5'>
-                        <select class="selectpicker" data-live-search="true" name = 'origin'>
-                            {%if countries%}
-                                {% for country in countries %}
-                                <option value = '{{country[1]}}, {{country[2]}}' name = 'country'>{{country[1]}}, {{country[2]}}</option>
-                                {% endfor %}
-                            {%endif%}
+                                    <div class = 'origin'>
+                        <select class="selectpicker" data-live-search="true" name = 'origin' id = 'origin'>
                         </select>
+                                    </div>
                         </div>
                     </div>
                 </div>
@@ -267,13 +310,10 @@
                         <label class = 'mr-sm-5 my-sm-2' for="destination">To:</label>
                                     </div>
                                     <div class = 'col-md-5'>
-                        <select class="selectpicker" data-live-search="true" name = 'destination'>
-                            {%if countries%}
-                                {% for country in countries %}
-                                    <option value = '{{country[1]}}, {{country[2]}}' name = 'country'>{{country[1]}}, {{country[2]}}</option>
-                                {% endfor %}
-                            {% endif %}
+                                        <div class = 'destination'>
+                        <select class="selectpicker" data-live-search="true" name = 'destination' id = 'destination'>
                         </select>
+                                        </div>
                         </div> 
                     </div>
                 </div>
@@ -328,7 +368,8 @@
                         <label class = 'mr-sm-5 my-sm-2' for="currency">Currency:</label>
                             </div>
                         <div class = 'col-md-5'>
-                                <select class="selectpicker" data-live-search="true" name = 'currency'>
+                            <div class = 'currency'>
+                                <select class="selectpicker" data-live-search="true" name = 'currency' id = 'currency'>
                                     {% if currencies %}
                                         {% for currency in currencies %}
                                         {% set name, sym = currency.split(",") %}
@@ -336,6 +377,7 @@
                                         {% endfor %}
                                     {% endif %}
                                 </select>
+                            </div>
                         </div> 
                     </div>
                 </div>
@@ -352,29 +394,205 @@
         </div>
     
     </div>
+
+
+     <!--MODAL WINDOWS FOR ADDING ACCOMODATION-->
+     <div class="container">                   
+        <!-- Modal -->
+        <div class="modal fade" id="AccomodationModal" role="dialog">
+        <div class="modal-dialog"> 
+            <!-- Modal content-->
+            <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add information about your housing</h4>
+            </div>
+            <div class="modal-body">
+                <!--FORM INSIDE MODAL WINDOW-->
+                    <form action = '/trips/' method = 'POST' class = 'form-group'>
+                        <!--Country-->
+                        <div class="container-fluid my-sm-2">
+                        <div class = 'form-row justify-content-start'>
+                                <div class = 'col-md-3'>
+                        <label class = 'mr-sm-5 my-sm-2' for="country">Country:</label>
+                                </div>
+                                <div class = 'col-md-5'>
+                                    <div class = 'country'>
+                        <select class="selectpicker" data-live-search="true" name = 'country' id = 'country'>
+                        </select>
+                                    </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <!--Address-->
+            <div class="container-fluid my-sm-2">
+                <div class = 'form-row justify-content-start'>
+                        <div class = 'col-md-3'>
+                    <label class = 'mr-sm-5 my-sm-2' for="address">Address:</label>
+                                </div>
+                                    <div class = 'col-md-6'>
+                                        <input type = 'text' class = 'form-control' 
+                                        value = '{{request.form.address}}' name='address'>
+                    </div> 
+                </div>
+            </div>
+
+                <!--From-->
+                <div class="container-fluid">
+                        <div class="form-row">
+                            <div class = 'col-md-3'>
+                        <label class = 'mr-sm-5 my-sm-2' for="departure">From:</label>
+                            </div>
+                                <div class="col-sm-6 md-5">
+                                    <div class="form-group">
+                                        <div class="input-group date" id="datetimepicker_from" data-target-input="nearest">
+                                            <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker_from"
+                                            value = '{{request.form.from}}' name = 'from'/>
+                                            <div class="input-group-append" data-target="#datetimepicker_from" data-toggle="datetimepicker">
+                                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                    <script type="text/javascript">
+                                        $(function () {
+                                            $('#datetimepicker_from').datetimepicker({
+                                                locale: 'ru',
+                                                format: "DD.MM.YYYY"
+                                            });
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                
+                       
+                        
+
+            <!--Till-->
+            <div class="container-fluid">
+                    <div class="form-row">
+                        <div class = 'col-md-3'>
+                    <label class = 'mr-sm-5 my-sm-2' for="arrival">Until:</label>
+                        </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <div class="input-group date" id="datetimepicker_till" data-target-input="nearest">
+                                        <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker_till"
+                                        value = '{{request.form.till}}' name = 'till'/>
+                                        <div class="input-group-append" data-target="#datetimepicker_till" data-toggle="datetimepicker">
+                                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                                <script type="text/javascript">
+                                    $(function () {
+                                        $('#datetimepicker_till').datetimepicker({
+                                            locale: 'ru',
+                                            format: "DD.MM.YYYY"
+                                        });
+                                    });
+                                </script>
+                            </div>
+                        </div>
+
+
+                        <!--Fare-->
+                        <div class="container-fluid my-sm-2">
+                        <div class = 'form-row justify-content-start'>
+                            <div class = 'col-md-3'>
+                        <label class = 'mr-sm-5 my-sm-2' for="fare">Fare:</label>
+                                </div>
+                                <div class = 'col-md-6'>
+                        <input type = 'text' class = 'form-control' 
+                        value = '{{request.form.fare}}' name='fare'>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Currency-->
+                        
+                        <div class="container-fluid my-sm-2">
+                        <div class = 'form-row justify-content-start'>
+                            <div class = 'col-md-3'>
+                        <label class = 'mr-sm-5 my-sm-2' for="currency">Currency:</label>
+                            </div>
+                        <div class = 'col-md-5'>
+                            <div class = 'currency'>
+                                <select class="selectpicker" data-live-search="true" name = 'currency' id = 'currency_accomodation'>
+                                    {% if currencies %}
+                                        {% for currency in currencies %}
+                                        {% set name, sym = currency.split(",") %}
+                                        <option value = '{{name}},{{sym}}' name = 'currency'>{{name}}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary" name = 'accomodation' value = 'add'>Add</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>    
+            </div>
+        </div>
+        </div>
+    
+    </div>
                          
 <script>
-    $(document).ready(function(){
-    $("#routeBtn").click(function(){
-        $("#myModal").modal("show");
-    });
-    $("#myBtn").click(function(){
-        $("#myModal").modal("hide");
-    });
-    });
-</script>
+    function addOptions(query, object) {
+        var data = query
+        if (object == '#country') {
+            for (var key in data) {
+                var new_data = data[key];
+                var country = new_data[0];
+                $(object).append(`<option value="${country}"> 
+                            ${country}
+                                </option>`).selectpicker('refresh');
+                    }   
+                }
+        else {
+            for (var key in data) {
+                var new_data = data[key];
+                var city = new_data[1];
+                var country = new_data[2];
+                $(object).append(`<option value="${city}, ${country}"> 
+                            ${city}, ${country}
+                                </option>`).selectpicker('refresh');
+                        }   
+                    }
+                }
 
-<script>
-    {%if stats%}
+    function addCurrency(query, object) {
+        var data = query;
+        for (var key in data) {
+                var new_data = data[key];
+                const words = new_data.split(",");
+                var name = words[0]
+                var sym = words[1]
+                $(object).append(`<option value="${name},${sym}"> 
+                            ${name}
+                                </option>`).selectpicker('refresh');
+                }
+    }
+
     var graphs = {{plot | safe}};
     Plotly.plot('graph',graphs,{"title": {"text": "Duration of housing"}});
-    {%endif%}
-</script>
 
-<script>
     {%if location%}
     var graphs = {{location.get_weekly_rates() | safe}};
     Plotly.plot('rates_graph',graphs, {});
+
+    var weatherGraphs = {{location.graph_weather() | safe}};
+    Plotly.plot('weather_graph', weatherGraphs, {});
+
     {%endif%}
 </script>
 {% endblock maincontent %}
+

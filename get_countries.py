@@ -3,9 +3,6 @@ import pickle
 import MySQLdb
 from MySQLdb import escape_string as thwart
 
-useful_data = pd.read_pickle('countries.pickle')
-
-
 
 
 connection = MySQLdb.connect(
@@ -15,12 +12,14 @@ connection = MySQLdb.connect(
                             db = 'flaskproject'
                             )
 cursor = connection.cursor()
-cursor.execute("DROP TABLE countries")
-try:
+cursor.execute('DROP TABLE housing')
 
-    cursor.execute("CREATE TABLE countries \
-    (country_id INT(11) AUTO_INCREMENT PRIMARY KEY, city VARCHAR(30), country VARCHAR(30),\
-    lat DECIMAL(5,2), lng DECIMAL(5,2))")
+try:
+    cursor.execute("CREATE TABLE housing \
+    (country VARCHAR(30), address VARCHAR(40), start_date DATE, end_date DATE,\
+    fare DECIMAL(6,3), currency VARCHAR(10), time VARCHAR(20), sum_rub VARCHAR(40), uid INT(11), \
+    PRIMARY KEY (start_date, end_date),\
+    FOREIGN KEY (uid) REFERENCES users (uid) ON DELETE CASCADE)")
 
 except Exception as e:
     print(e)
@@ -39,13 +38,12 @@ except Exception as e:
 cursor.execute("SHOW TABLES")
 result = cursor.fetchall()
 print(list(result))
-result = cursor.execute("SELECT * FROM countries")
+result = cursor.execute("SELECT * FROM housing")
 result = cursor.fetchall()
 print(len(result))
 cursor.close()
 connection.close()
 
-print(useful_data)
 
 
 

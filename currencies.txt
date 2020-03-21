@@ -1,5 +1,3 @@
-Albanian Lek,ALL
-East Caribbean Dollar,XCD
 Euro,EUR
 Barbadian Dollar,BBD
 Bhutanese Ngultrum,BTN
@@ -84,7 +82,6 @@ Venezuelan Bolivar,VEF
 Algerian Dinar,DZD
 Argentine Peso,ARS
 Azerbaijani Manat,AZN
-Belarusian Ruble,BYR
 Bolivian Boliviano,BOB
 Bulgarian Lev,BGN
 Canadian Dollar,CAD
@@ -153,7 +150,7 @@ Turkmenistan Manat,TMT
 British Pound,GBP
 Zambian Kwacha,ZMW
 Bitcoin,BTC
-New Belarusian Ruble,BYN
+Belarusian Ruble,BYN
 Bermudan Dollar,BMD
 Guernsey Pound,GGP
 Chilean Unit Of Account,CLF

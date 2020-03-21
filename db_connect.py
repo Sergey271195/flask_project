@@ -1,7 +1,7 @@
 import MySQLdb
 from MySQLdb import escape_string as thwart
 from passlib.hash import sha256_crypt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from PIL import Image
 import plotly
 import plotly.graph_objs as go
@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import json, gc
 import requests
+import math, decimal
 
 
 def timedelta_format(delta, seconds = False):
@@ -35,7 +36,7 @@ class DbConnection():
             self.cursor = self.connection.cursor()
             self.cursor.execute("SHOW TABLES")
         except Exception as e:
-            print(e)
+            print(e, 'not connected, recconecting to Db')
             self.connection = MySQLdb.connect(
                             host='localhost', 
                             user = 'root', 
@@ -71,10 +72,10 @@ class DbConnection():
         self.close()
 
     def show_table(self):
-        check = self.cursor.execute("SELECT uid, username, password, tracking FROM users")
+        check = self.cursor.execute("SELECT * FROM housing")
         result = self.cursor.fetchall()
         self.close()
-        #print(result)
+        print(result)
 
 
     def login(self, username, password):
@@ -99,12 +100,44 @@ class DbConnection():
         return (user_id, user_username, user_email)
 
     
-    def get_cities_select_options(self):
+    def get_cities_select_options(self, value):
         self.connect()
-        self.cursor.execute("SELECT * FROM countries")
+        self.cursor.execute("SELECT * FROM countries WHERE lower(city) LIKE '%s%%'" %(value,))
         result = self.cursor.fetchall()
         self.close()
         return result
+
+    def get_countries_select_options(self, value):
+        self.connect()
+        self.cursor.execute("SELECT DISTINCT country FROM countries WHERE lower(country) LIKE '%s%%'" %(value,))
+        result = self.cursor.fetchall()
+        self.close()
+        return result
+
+    def get_distance(self, route):
+        self.connect()
+        origin = route[0]
+        destination = route[1]
+        origin_name = origin.split(',')[0]
+        destination_name = destination.split(',')[0]
+
+        earth_radius = 6370 #km
+        self.cursor.execute("SELECT lat, lng FROM countries WHERE city = (%s)", (thwart(origin_name),))
+        cor = self.cursor.fetchone()
+        lat1 = cor[0]
+        lng1 = cor[1]
+        self.cursor.execute("SELECT lat, lng FROM countries WHERE city = (%s)", (thwart(destination_name),))
+        cor = self.cursor.fetchone()
+        lat2 = cor[0]
+        lng2 = cor[1]
+
+        a = math.cos(lat1*decimal.Decimal(math.pi/180))*math.cos(lat2*decimal.Decimal(math.pi/180))*math.cos(lng1*decimal.Decimal(math.pi/180))*math.cos(lng2*decimal.Decimal(math.pi/180))
+        b = math.cos(lat1*decimal.Decimal(math.pi/180))*math.cos(lat2*decimal.Decimal(math.pi/180))*math.sin(lng1*decimal.Decimal(math.pi/180))*math.sin(lng2*decimal.Decimal(math.pi/180))
+        c = math.sin(lat1*decimal.Decimal(math.pi/180))*math.sin(lat2*decimal.Decimal(math.pi/180))
+        distance = round(math.acos(a+b+c)*earth_radius, 2) #km
+        self.close()
+
+        return distance
 
     
     def create_table(self):
@@ -125,12 +158,20 @@ class DbConnection():
         check = self.cursor.execute("SELECT * FROM trips")
         result = self.cursor.fetchall()
         self.close()
-        #print(result)
 
     def get_routes(self, user_id):
         self.connect()
         self.cursor.execute("SELECT origin, destination, departure, arrival, fare, currency, origin_country, destination_country, road_time, distance, trip_id\
          FROM trips WHERE uid = (%s) ORDER BY arrival DESC", 
+        (thwart(user_id), ))
+        result = self.cursor.fetchall()
+        self.close()
+        return result
+
+    def get_housing(self, user_id):
+        self.connect()
+        self.cursor.execute("SELECT *\
+         FROM housing WHERE uid = (%s) ORDER BY start_date DESC", 
         (thwart(user_id), ))
         result = self.cursor.fetchall()
         self.close()
@@ -145,6 +186,12 @@ class DbConnection():
     def delete_route(self, route_id):
         self.connect()
         self.cursor.execute('DELETE FROM trips WHERE trip_id = (%s)', (thwart(route_id), ))
+        self.connection.commit()
+        self.close()
+
+    def delete_housing(self, start_date):
+        self.connect()
+        self.cursor.execute('DELETE FROM housing WHERE start_date = (%s)', (thwart(start_date), ))
         self.connection.commit()
         self.close()
 
@@ -176,6 +223,16 @@ class DbConnection():
         self.connection.commit()
         self.close()
 
+    def add_housing(self, data):
+        self.connect()
+        country, address, start_date, end_date, fare, currency, time, sum_rub, uid = data
+        self.cursor.execute("INSERT IGNORE INTO housing (country, address, start_date, end_date, fare, currency, time, sum_rub, uid) \
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+         (thwart(country), thwart(address), thwart(start_date), thwart(end_date), thwart(fare), thwart(currency), 
+         thwart(time), thwart(sum_rub), thwart(uid)))
+        self.connection.commit()
+        self.close()
+
     def check_dublicate_routes(self, new_route):
         self.connect()
         
@@ -200,7 +257,6 @@ class Statistics():
         self.status = False
         self.country_percent = {}
         self.connection, self.cursor = connection.connect()
-        #self.cursor = self.connection.cursor()
         self.country_time = {}
         self.total_fare = 0
         self.total_time = 0
@@ -284,27 +340,127 @@ class Statistics():
         
 
 class LocationInfo():
-    def __init__(self, location):
+    def __init__(self, location, ip_address, connection):
+        self.connection = connection
+        self.ip_address = ip_address
         self.location = str(location).strip()
         self.url = "https://free.currconv.com/api/v7/convert"
         self.host_key = '91a7c6b71f4a592e8c59'
         self.curr_list =  pd.read_csv('curr-country.txt')
         self.curr_list.columns = ["country", "currency"]
         self.curr_currency = self.curr_list[self.curr_list['country'] == self.location]['currency'].values[0]
+        self.lat, self.lng = self.get_current_coordinats()
+        self.get_weather_5()
+
+
+    def get_weather(self):
+
+        weather_key = 'dd50b92e38f6ed0c9dc3990ab98f1773'
+
+        url = f"https://api.openweathermap.org/data/2.5/weather"
+
+        querystring = {"lat": self.lat,"lon": self.lng, 'appid':weather_key}
+
+        response = requests.get(url, params=querystring)
+
+        content = response.json()
+
+        main = content['weather'][0]['main']
+        description = content['weather'][0]['description']
+        temp = round(float(content['main']['temp']) - 273.15 , 2) # Celsius
+        temp_feels_like = round(float(content['main']['feels_like']) - 273.15 , 2) # Celsius
+        humidity = content['main']['humidity'] # %
+        wind_speed = content['wind']['speed'] # m/s
+
+        return(main, description, temp, temp_feels_like, humidity, wind_speed)
+
+    
+    def get_weather_5(self):
+        self.connection.connect()
+        weather_key = 'dd50b92e38f6ed0c9dc3990ab98f1773'
+        url = f"https://api.openweathermap.org/data/2.5/forecast"
+        querystring = {"lat": self.lat,"lon": self.lng, 'appid':weather_key}
+        response = requests.get(url, params=querystring)
+        content = response.json()
+
+        city_name = content['city']['name']
+        for index, entry in enumerate(content['list']):
+            main = entry['weather'][0]['main']
+            description = entry['weather'][0]['description']
+            time = datetime.fromtimestamp(int(entry['dt']))
+            temp = round(float(entry['main']['temp']) -275.15, 2)
+            feels_like = round(float(entry['main']['feels_like'])-275.15, 2)
+            pressure = entry['main']['pressure']
+            humidity = entry['main']['humidity']
+            wind_speed = entry['wind']['speed']
+
+            try:
+                self.connection.cursor.execute('INSERT IGNORE INTO weather (location, main, description, time,\
+                temperature, feels_like, pressure, humidity, wind_speed) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                (thwart(city_name), thwart(main), thwart(description), thwart(str(time)), thwart(str(temp)), thwart(str(feels_like)), thwart(str(pressure)),
+                thwart(str(humidity)), thwart(str(wind_speed))))
+            except Exception as e:
+                print(e)
+        
+        self.connection.connection.commit()
+        self.connection.close()
+
+
+
+    def get_current_coordinats(self):
+        if self.ip_address == '127.0.0.1':
+            self.ip_address = '37.212.60.60'
+
+        url = f"https://ip-geolocation-ipwhois-io.p.rapidapi.com/json/{self.ip_address}"
+
+        headers = {
+            'x-rapidapi-host': "ip-geolocation-ipwhois-io.p.rapidapi.com",
+            'x-rapidapi-key': "b3e33994b9mshd8f39d1dfaa3e21p198457jsnc8985ee58d8d"
+            }
+
+        response = requests.get(url, headers = headers)
+        content = response.json()
+
+        lat = content['latitude']
+        lng = content['longitude']
+
+        return lat, lng
 
     def get_current_rate(self):
         
         querystring = {'q': f'{self.curr_currency}_RUB,USD_{self.curr_currency},EUR_{self.curr_currency}',
                         "apiKey": self.host_key}
         response = requests.get(self.url, params=querystring)
+        if response.status_code == '200':
+            content = response.json()
+            exchange_rate = []
+            for value in content['results']:
+                exchange_rate.append((value, content['results'][value]['val']))
 
-        content = response.json()
-        exchange_rate = []
-        for value in content['results']:
-            exchange_rate.append((value, content['results'][value]['val']))
+            response.close()
+            return exchange_rate
+        else:
+            return 'LIMIT REACHED'
 
-        response.close()
-        return exchange_rate
+    def get_rate(self, currency, date):
+
+        querystring = {'q': f'{currency[:3]}_RUB', 'date': date.strftime('%Y-%m-%d'),
+                            "apiKey": self.host_key}
+
+        response = requests.get(self.url, params=querystring)
+        if response.status_code == '200':
+            content = response.json()
+            exchange_rate = []
+            for value in content['results']:
+                exchange_rate.append((value, content['results'][value]['val']))
+
+            response.close()
+            return exchange_rate
+        else:
+            return 'LIMIT REACHED'
+
+    def get_rate_2(self, currnecy):
+        apiKey = 'frNWPBXvQ9fhJ7zHru2g8NjNth6JRA'
 
     def get_weekly_rates(self):
         
@@ -353,6 +509,39 @@ class LocationInfo():
 
         return graphJSON
 
+
+    def graph_weather(self):
+        self.connection.connect()
+        result = self.connection.cursor.execute('SELECT time, feels_like, temperature, pressure, humidity, wind_speed FROM weather')
+        result = self.connection.cursor.fetchall()
+        df = pd.DataFrame(list(result), columns = ['time', 'Feels like', 'Temperature, Grad', 'Pressure, kPa', 'Humidity, %', 'Wind speed, m/s'])
+        df['time'] = pd.to_datetime(df['time'])
+        df = df.set_index('time')
+        self.connection.close()
+
+        fig = make_subplots(rows=2, cols=2, subplot_titles=df.columns[1:])
+
+
+        for index, column in enumerate(df.columns[1:]):
+
+            mean = round(df[column].mean(), 2)
+
+            fig.add_trace(
+                    go.Scatter(x=df.index, y=df[column], name = column),
+                    row=index//2+1, col=index%2+1
+                    )
+            fig.update_xaxes(tickmode = 'linear', tick0 = df.index[4], title_text = f'Mean value {mean}' ,tickformat = '%d.%m.%y', row=index//2+1, col=index%2+1)
+
+        fig.add_trace(
+                    go.Scatter(x=df.index, y=df[df.columns[0]], name = df.columns[0]),
+                    row=1, col=1
+                    )
+
+        fig.update_layout(height=600, width = 1000, showlegend=False)
+
+        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+        return graphJSON
 
     
                 
