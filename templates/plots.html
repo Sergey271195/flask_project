@@ -1,4 +1,63 @@
 {% extends 'layout.html' %}
+      
 {% block maincontent %}
-<div>PLOTS CONTENT</div>
+<script type="text/javascript">
+
+$(document).ready(function() {
+  $(".signal").click(function () {
+    var txt = $(this).text();
+    var old_el = $(this);
+    old_el.hide();
+    var new_el = $('<button class="btn btn-secondary btn-lg btn-block signal_chosen" type="submit">'+txt+'</button>');
+    new_el.click(function() {
+        $(this).hide();
+        old_el.show();
+    });
+    $("#chosen").append(new_el);
+    $.getJSON('/getPlot/', {signal: txt},
+        function(data) {
+        var graphs = JSON.parse(data);
+        console.log(graphs)
+        Plotly.react('graph', graphs, {});  
+        });
+    });
+
+
+    /* $(".signal_chosen").click(function () {
+        console.log('HI');
+    var txt = $(this).text();
+    $(this).hide()
+    $("#list").append('<button class="btn btn-secondary btn-lg btn-block signal_chosen" type="submit">'+txt+'</button>')
+    $.getJSON('/getPlot/', {signal: txt},
+        function(data) {
+        var graphs = JSON.parse(data);
+        console.log(graphs)
+        Plotly.react('graph', graphs, {});  
+        }); */
+
+        var graphs = {{empty_plot | safe}};
+        Plotly.plot('graph',graphs,{});
+    });
+
+
+</script> 
+
+<div class ='row'>
+<div class = 'col ml-3' style = 'max-height: 80vh; width: 15%; overflow-y: scroll;' id = 'list'>
+    List of signals
+    <input type = 'text' class = 'form-control' name='search' id= 'search_list'>
+    {% for signal in signals%}
+    <button class="btn btn-secondary btn-lg btn-block signal" type="submit">{{signal}}</button>
+    {% endfor %}
+</div>
+<div class = 'col-8'  style = 'width: 70%' id = 'result'>
+    <div id="graph">
+    </div>
+</div>
+<div class = 'col mr-3' style = 'max-height: 80vh; width: 15%; overflow-y: scroll;' id='chosen'>
+    List of chosen signals
+    <input type = 'text' class = 'form-control' name='search' id= 'search_chosen'>
+</div>
+</div>
+<hr>
 {% endblock maincontent%}

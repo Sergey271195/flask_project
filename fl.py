@@ -240,10 +240,18 @@ def get_metric():
     for stat in top_stats[:10]:
         print(stat)  """ 
 
-
+from test import unique_signals as uq, get_plot, get_empty_plot
 @app.route('/plots/', methods = ['GET', 'POST'])
 def plots():
-    return render_template('plots.html')
+    return render_template('plots.html', signals = uq, empty_plot = get_empty_plot())
+
+
+@app.route('/getPlot/', methods = ['GET', 'POST'])
+def getPlot():
+    result = request.args.get('signal')
+    print(result, "SIGNAL")
+    response = get_plot(result)
+    return json.dumps(response)
 
 
 if __name__ == '__main__':

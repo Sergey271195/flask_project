@@ -17,4 +17,6 @@ html {
     height: 20px;
     line-height: 20px; /* Vertically center the text there */
   }
-  
+  .signals_cont {
+    height: 100vh;
+  }
