@@ -477,37 +477,43 @@ class LocationInfo():
 
         response = requests.get(self.url, params=querystring)
 
-        content = response.json()
-        exchange_rate = []
-        titles = []
-        for value in content['results']:
-            titles.append(value.replace('_', ' to '))
+        if response.status_code == '200':
 
-        fig = make_subplots(rows=2, cols=2, subplot_titles=titles)
-        i = 1
-        j = 1
-        for value in content['results']:
-            if i == 3:
-                i = 1
-                j+=1
-            df = pd.Series(content['results'][value]['val'], name = 'values') 
-            df.index.name = 'dates'
-            df = df.reset_index()
-            mean = df['values'].mean()
-            fig.add_trace(
-                go.Scatter(x=df['dates'], y=df['values'], name = value.replace('_', ' to ')),
-                row=j, col=i
-                )
-            fig.update_xaxes(title_text = f'Mean {round(mean,2)}' ,tickformat = '%d.%m.%Y', row=j, col=i)
-            i+=1
+            content = response.json()
+            exchange_rate = []
+            titles = []
+            for value in content['results']:
+                titles.append(value.replace('_', ' to '))
 
-        fig.update_layout(height=600, width = 1000, showlegend=False)
+            fig = make_subplots(rows=2, cols=2, subplot_titles=titles)
+            i = 1
+            j = 1
+            for value in content['results']:
+                if i == 3:
+                    i = 1
+                    j+=1
+                df = pd.Series(content['results'][value]['val'], name = 'values') 
+                df.index.name = 'dates'
+                df = df.reset_index()
+                mean = df['values'].mean()
+                fig.add_trace(
+                    go.Scatter(x=df['dates'], y=df['values'], name = value.replace('_', ' to ')),
+                    row=j, col=i
+                    )
+                fig.update_xaxes(title_text = f'Mean {round(mean,2)}' ,tickformat = '%d.%m.%Y', row=j, col=i)
+                i+=1
 
-        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+            fig.update_layout(height=600, width = 1000, showlegend=False)
 
-        response.close()
+            graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-        return graphJSON
+            response.close()
+
+            return graphJSON
+        
+        else:
+            response.close()
+            return 'LIMIT REACHED'
 
 
     def graph_weather(self):

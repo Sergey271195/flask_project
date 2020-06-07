@@ -26,6 +26,7 @@
           <!--Routes Tab-->
 
           <div class="tab-content" id="myTabContent">
+
             <div class="tab-pane fade show active ml-sm-5 my-sm-2" id="trip" role="tabpanel" aria-labelledby="home-tab">
                     <div class="d-flex align-items-center ml-sm-5">
                                                     
@@ -36,6 +37,7 @@
                 </div>
                     <hr class = 'w-75 float-left'>
 
+                <div class = 'col-12'>    
                 {% for route in routes %}
             <div class = 'parent-route'>
                 <div class = 'container ml-sm-2 float-left w-50' >
@@ -67,6 +69,7 @@
                 
 
                     {% endfor %}
+                </div>
             </div>
 
 
@@ -84,9 +87,9 @@
 
             </div>
                 <hr class = 'w-75 float-left'>
-
+  
                 {% for house in mysession.housing %}
-                <div class = 'parent-house'>
+                <div class = 'parent-house row-12'>
                     <div class = 'container ml-sm-2 float-left w-50' >
                     
                         <div class = 'row justify-content-start my-sm-3' >   
@@ -120,7 +123,6 @@
                     
     
                         {% endfor %}
-
             </div>
 
             <!--TASKS TAB-->
@@ -586,9 +588,12 @@
     Plotly.plot('graph',graphs,{"title": {"text": "Duration of housing"}});
 
     {%if location%}
+    {% if location.get_weekly_rates() == 'LIMIT REACHED'%}
+        $('#graphs').append('<p>API LIMIT REACHED</p>');
+    {%else%}
     var graphs = {{location.get_weekly_rates() | safe}};
     Plotly.plot('rates_graph',graphs, {});
-
+    {% endif %}
     var weatherGraphs = {{location.graph_weather() | safe}};
     Plotly.plot('weather_graph', weatherGraphs, {});
 

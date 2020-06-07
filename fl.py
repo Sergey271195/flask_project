@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect, session, flash, jsonify
+from graphs import Plot
 import requests, json
 from datetime import datetime, date
 from db_connect import DbConnection, Statistics, LocationInfo
@@ -72,6 +73,7 @@ db_connection = DbConnection()
 db_connection.show_table()
 
 mysession = SessionData(db_connection)
+session_plot = Plot()
 
 
 def format_datetime(value, period):
@@ -243,14 +245,15 @@ def get_metric():
 from test import unique_signals as uq, get_plot, get_empty_plot
 @app.route('/plots/', methods = ['GET', 'POST'])
 def plots():
-    return render_template('plots.html', signals = uq, empty_plot = get_empty_plot())
+    return render_template('plots.html', s_plot = session_plot)
 
 
 @app.route('/getPlot/', methods = ['GET', 'POST'])
 def getPlot():
+    #result = json.loads(request.args.get('signal'))
     result = request.args.get('signal')
-    print(result, "SIGNAL")
-    response = get_plot(result)
+    print(result)
+    response = session_plot.get_traces(result)
     return json.dumps(response)
 
 

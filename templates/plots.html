@@ -4,60 +4,128 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
+    var signals_arr = [];
   $(".signal").click(function () {
     var txt = $(this).text();
+    signals_arr.push(txt);
     var old_el = $(this);
     old_el.hide();
-    var new_el = $('<button class="btn btn-secondary btn-lg btn-block signal_chosen" type="submit">'+txt+'</button>');
+    var new_el = $('<button class="btn btn-secondary btn-md btn-block signal_chosen" type="submit">'+txt+'</button>');
     new_el.click(function() {
-        $(this).hide();
+        var this_txt = $(this).text();
+        var index = signals_arr.indexOf(txt);
+        signals_arr.splice(index, 1);
+        $(this).remove();
         old_el.show();
+        Plotly.deleteTraces('graph', index);
     });
-    $("#chosen").append(new_el);
+    $(".chosen_list").append(new_el);
+    var send_arr = JSON.stringify(signals_arr);
     $.getJSON('/getPlot/', {signal: txt},
         function(data) {
         var graphs = JSON.parse(data);
         console.log(graphs)
-        Plotly.react('graph', graphs, {});  
+        Plotly.addTraces('graph', graphs);  
         });
     });
 
 
-    /* $(".signal_chosen").click(function () {
-        console.log('HI');
-    var txt = $(this).text();
-    $(this).hide()
-    $("#list").append('<button class="btn btn-secondary btn-lg btn-block signal_chosen" type="submit">'+txt+'</button>')
-    $.getJSON('/getPlot/', {signal: txt},
-        function(data) {
-        var graphs = JSON.parse(data);
-        console.log(graphs)
-        Plotly.react('graph', graphs, {});  
-        }); */
+        var layout = {
+        height: '700',
+        legend: {
+            orientation: 'v'
+        }
+            };
+        Plotly.newPlot('graph',[], layout);
 
-        var graphs = {{empty_plot | safe}};
-        Plotly.plot('graph',graphs,{});
-    });
+
+
+    /* SEARCH INPUT */
+
+$('#search_list').on('input', function() { 
+    var value = $(this).val();
+    var parentDiv = $('.signals_list');
+    if (value.length > 0) { 
+            $(parentDiv).find('button').each(function (index, element) {
+                console.log($( this ).text());
+            
+            if ($( this ).text().toLowerCase().includes(value.toLowerCase()) == false) {
+                $(this).hide();
+            }
+            else {
+                $(this).show();
+                }
+            });
+        }
+    else {
+        $(parentDiv).find('button').each(function (index, element) {
+            $(this).show();
+        });
+    };
+});
+    
+
+$('#search_chosen').on('input', function() { 
+    var value = $(this).val();
+    var parentDiv = $('.chosen_list');
+    if (value.length > 0) { 
+            $(parentDiv).find('button').each(function (index, element) {
+                console.log($( this ).text());
+            
+            if ($( this ).text().toLowerCase().includes(value.toLowerCase()) == false) {
+                $(this).hide();
+            }
+            else {
+                $(this).show();
+                }
+            });
+        }
+    else {
+        $(parentDiv).find('button').each(function (index, element) {
+            $(this).show();
+        });
+    };
+});
+
+
+$( ".form-control datetimepicker-input" ).change(function() {
+	 alert( "Handler for .change() called." );
+	});
+
+});
+
+
 
 
 </script> 
 
-<div class ='row'>
-<div class = 'col ml-3' style = 'max-height: 80vh; width: 15%; overflow-y: scroll;' id = 'list'>
-    List of signals
-    <input type = 'text' class = 'form-control' name='search' id= 'search_list'>
-    {% for signal in signals%}
-    <button class="btn btn-secondary btn-lg btn-block signal" type="submit">{{signal}}</button>
+
+<div class ='container-fluid'>
+    <div class="row justify-content-start">
+<div class = 'col ml-2' style = 'max-height: 80vh; overflow-y: scroll;' id = 'list'>
+        <div class = 'my-2 py-1 sticky-top' style= 'background-color: white;'>
+            List of signals
+            <input type = 'text' class = 'form-control' name='search' id= 'search_list'>
+        </div>
+    <div class='signals_list'>
+    {% for signal in s_plot.unique_signals_d%}
+    <button class="btn btn-secondary btn-md btn-block signal" type="submit">{{signal}}</button>
     {% endfor %}
+    </div>
 </div>
-<div class = 'col-8'  style = 'width: 70%' id = 'result'>
+<div class = 'col-7' id = 'result'>
     <div id="graph">
     </div>
 </div>
-<div class = 'col mr-3' style = 'max-height: 80vh; width: 15%; overflow-y: scroll;' id='chosen'>
-    List of chosen signals
-    <input type = 'text' class = 'form-control' name='search' id= 'search_chosen'>
+<div class = 'col mr-2' style = 'max-height: 80vh; overflow-y: scroll;' id='chosen'>
+        <div class = 'my-2 py-1 sticky-top' style= 'background-color: white;'>
+            List of chosen signals
+            <input type = 'text' class = 'form-control' name='search' id= 'search_chosen'>
+        </div>
+    <div class='chosen_list'></div>
+        </div>
+    </div>
 </div>
-</div>
-<hr>
+    <hr>
+
 {% endblock maincontent%}
